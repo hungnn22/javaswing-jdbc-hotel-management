@@ -59,7 +59,7 @@ public class TienNghiDAO extends ManageDAO<TienNghi, Integer> {
     public String selectNameById(Integer id) {
         return (String) XJdbc.value(selectNameByIdSql, id);
     }
-    
+
     public List<TienNghi> selectByKeyword(String key) {
         return selectBySql(selectByKeywordSql, "%" + key + "%");
     }

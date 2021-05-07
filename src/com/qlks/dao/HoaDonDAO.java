@@ -8,10 +8,7 @@ package com.qlks.dao;
 import com.qlks.entity.HoaDon;
 import com.qlks.util.XJdbc;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**

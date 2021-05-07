@@ -13,19 +13,11 @@ import com.qlks.entity.NhanVien;
 import com.qlks.util.Auth;
 import com.qlks.util.MsgBox;
 import com.qlks.util.Validator;
-import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.Window;
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyVetoException;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JDesktopPane;
-import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
-import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 
 public class LoginDialog extends javax.swing.JDialog {

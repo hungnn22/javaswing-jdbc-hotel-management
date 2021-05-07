@@ -12,7 +12,6 @@ import com.qlks.entity.NhanVien;
 import com.qlks.util.MsgBox;
 import com.qlks.util.Validator;
 import com.qlks.util.XImage;
-import java.awt.Window;
 import java.io.File;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;

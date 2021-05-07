@@ -5,8 +5,6 @@
  */
 package com.qlks.entity;
 
-import java.util.Date;
-
 /**
  *
  * @author markhyun
@@ -89,7 +87,5 @@ public class DichVu {
         Integer id = dichVu.getMa();
         return id.equals(this.ma); //To change body of generated methods, choose Tools | Templates.
     }
-    
-    
 
 }

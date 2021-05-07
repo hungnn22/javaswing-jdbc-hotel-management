@@ -12,6 +12,7 @@ import java.util.Date;
  * @author hungn
  */
 public class NhanVien {
+
     private String ma;
     private String ten;
     private String pass;
@@ -118,5 +119,5 @@ public class NhanVien {
     public void setMaBoPhan(String maBoPhan) {
         this.maBoPhan = maBoPhan;
     }
-    
+
 }

@@ -5,8 +5,6 @@
  */
 package com.qlks.entity;
 
-import com.qlks.dao.TienNghiDAO;
-
 /**
  *
  * @author hungn

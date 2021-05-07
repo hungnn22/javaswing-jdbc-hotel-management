@@ -6,7 +6,6 @@
 package com.qlks.dao;
 
 import com.qlks.entity.PhongTienNghi;
-import com.qlks.entity.TienNghi;
 import com.qlks.util.XJdbc;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ public class PhongTienNghiDAO extends ManageDAO<PhongTienNghi, Integer> {
     public List<Object> moTaPhong(String soPhong) {
         return XJdbc.column(moTaPhongSql, soPhong);
     }
-    
+
     @Override
     public boolean insert(PhongTienNghi entity) {
         return XJdbc.update(insertSql, entity.getSoPhong(), entity.getMaTienNghi(), entity.getSoLuong(), entity.getTinhTrang());

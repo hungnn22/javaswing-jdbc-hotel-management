@@ -5,6 +5,7 @@
  */
 package com.qlks.dao;
 
+import com.qlks.entity.PDFExport;
 import com.qlks.util.XJdbc;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -16,90 +17,25 @@ import java.util.List;
  */
 public class PDFExportDAO {
 
-    private String selectHDByIDSql = "select * from hoadon where maHD = ?";
+    private String selectRoomInforSql = "{call sp_phongthue(?,?)}";
+    private String selectRoomMoneySql = "{call sp_tienphong(?,?)}";
+    private String selectServicesSql = "SELECT TENDV, SOLUONG, DONGIA, dongia*SOLUONG as TONGTIEN from HOADON a\n"
+            + "	JOIN HDDICHVU b on b.MAHD = a.MAHD \n"
+            + "	JOIN DICHVU c on c.MADV = b.MADV\n"
+            + "WHERE b.MAHD = ?";
 
-    private String selectTongGioThueSql = "select tongGioThue = DATEDIFF(HOUR, ngaythue, ngaytt) from hoadon where MAHD = ?";
-    private String selectTongNgayThueSql = "tongNgayThue = DATEDIFF(day, ngaythue, ngaytt) from hoadon where MAHD = ?";
-    private String selectTenLPSql = "select d.tenlp \n"
-            + "from hoadon a join hdphong b on b.MAHD = a.MAHD \n"
-            + "join phong c on c.SOPHONG = b.SOPHONG \n"
-            + "join loaiphong d on d.malp = c.malp\n"
-            + "where b.MAHD = ?";
-
-    private String selectGioTre_QuaDemSql = "select giotre_quadem = DATEPART(hour, ngaytt) from hoadon where MAHD = ?";
-
-    private String selectHDPhongSql = "select b.mahd, b.sophong, a.malg, e.tenlg, c.malp, dongia "
-            + "from hoadon a join hdphong b on b.MAHD = a.MAHD "
-            + "join phong c on c.SOPHONG = b.SOPHONG "
-            + "join LOAIPHONG_LOAIGIA d on d.MALP = c.MALP and d.MALG = a.MALG "
-            + "join loaigia e on e.MALG = a.MALG "
-            + "where b.MAHD = ?";
-
-    private String selectHDDVSql = "select c.mahd, c.madv, tendv, soluong, d.dongia, d.dongia*soluong as tong from hoadon a \n"
-            + "join HDDICHVU c on c.MAHD = a.MAHD\n"
-            + "join dichvu d on d.MADV = c.MADV\n"
-            + "where c.MAHD = ?";
-
-    public Integer selectMaLG(Integer key) {
-        return selectColumInt(selectHDPhongSql, "malg", key);
-    }
-
-    public Integer selecHour3(Integer key) {
-        return selectColumInt(selectTongNgayThueSql, "tongngaythue", key);
-
-    }
-
-    public Integer selecHour2(Integer key) {
-        return selectColumInt(selectGioTre_QuaDemSql, "giotre_quadem", key);
-
-    }
-
-    public Integer selectHour(Integer key) {
-        return selectColumInt(selectTongGioThueSql, "tonggiothue", key);
-    }
-
-    public List<Double> selectTongTienHD(Integer key) {
-        List<Double> list = selectNumValue(selectHDByIDSql, "tongtien", key);
+    public List<Double> selectTienPhong(Integer key, Integer type) {
+        List<Double> list = selectNumValue(selectRoomMoneySql, "tienphong", key, type);
         return list;
     }
 
-    public List<Double> selectTongTienDV(Integer key) {
-        List<Double> list = selectNumValue(selectHDDVSql, "tong", key);
+    public List<PDFExport> selectRooms(Integer key, Integer type) {
+        List<PDFExport> list = selectBySqlRoom(selectRoomInforSql, key, type);
         return list;
     }
 
-    public List<Double> selectDGDV(Integer key) {
-        List<Double> list = selectNumValue(selectHDDVSql, "dongia", key);
-        return list;
-    }
-
-    public List<Integer> selectSoLuong(Integer key) {
-        List<Integer> list = selectNumIntValue(selectHDDVSql, "soluong", key);
-        return list;
-    }
-
-    public List<String> selectTenDV(Integer key) {
-        List<String> list = selectColumn(selectHDDVSql, "tenDV", key);
-        return list;
-    }
-
-    public List<Double> selectDonGiaPhong(Integer key) {
-        List<Double> list = selectNumValue(selectHDPhongSql, "dongia", key);
-        return list;
-    }
-
-    public List<String> selectTenLG(Integer key) {
-        List<String> list = selectColumn(selectHDPhongSql, "tenlg", key);
-        return list;
-    }
-
-    public List<String> selectTenLP(Integer key) {
-        List<String> list = selectColumn(selectTenLPSql, "tenlp", key);
-        return list;
-    }
-
-    public List<String> selectPhong(Integer key) {
-        List<String> list = selectColumn(selectHDPhongSql, "sophong", key);
+    public List<PDFExport> selectServices(Integer key) {
+        List<PDFExport> list = selectBySqlServices(selectServicesSql, key);
         return list;
     }
 
@@ -151,5 +87,41 @@ public class PDFExportDAO {
         } catch (Exception e) {
         }
         return -1;
+    }
+
+    protected List<PDFExport> selectBySqlRoom(String sql, Object... args) {
+        List<PDFExport> list = new ArrayList<>();
+        try (
+                ResultSet rs = XJdbc.query(sql, args);) {
+            while (rs.next()) {
+                PDFExport room = new PDFExport(
+                        rs.getString(1),
+                        rs.getInt(2),
+                        rs.getString(3),
+                        rs.getString(4)
+                );
+                list.add(room);
+            }
+        } catch (Exception e) {
+        }
+        return list;
+    }
+
+    protected List<PDFExport> selectBySqlServices(String sql, Object... args) {
+        List<PDFExport> list = new ArrayList<>();
+        try (
+                ResultSet rs = XJdbc.query(sql, args);) {
+            while (rs.next()) {
+                PDFExport services = new PDFExport(
+                        rs.getInt(2),
+                        rs.getString(1),
+                        rs.getDouble(3),
+                        rs.getDouble(4)
+                );
+                list.add(services);
+            }
+        } catch (Exception e) {
+        }
+        return list;
     }
 }

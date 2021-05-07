@@ -12,9 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
-import javax.swing.JDesktopPane;
 import javax.swing.JLabel;
 
 /**

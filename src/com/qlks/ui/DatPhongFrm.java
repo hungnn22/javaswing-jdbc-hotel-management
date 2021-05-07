@@ -5,8 +5,7 @@
  */
 package com.qlks.ui;
 
-import java.text.Normalizer;
-import java.util.regex.Pattern;
+import com.qlks.entity.PDFExport;
 import com.qlks.dao.DichVuDAO;
 import com.qlks.dao.HDDichVuDAO;
 import com.qlks.dao.HDPhongDAO;
@@ -26,9 +25,7 @@ import com.qlks.util.Auth;
 import com.qlks.util.FormatData;
 import com.qlks.util.MsgBox;
 import com.qlks.util.Validator;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.table.DefaultTableModel;
 import com.qlks.dao.PDFExportDAO;
@@ -51,8 +48,9 @@ import com.qlks.dao.NhanVienDAO;
 import com.qlks.entity.NhanVien;
 import java.awt.Desktop;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1186,12 +1184,12 @@ public class DatPhongFrm extends javax.swing.JInternalFrame {
         DefaultTableModel model = (DefaultTableModel) tblRoomSelected.getModel();
         model.setRowCount(0);
         LoaiGia lg = (LoaiGia) cboPriceType.getSelectedItem();
-        System.out.println("selected: " + lg);
+//        System.out.println("selected: " + lg);
         String des = "";
         for (Phong p : roomList) {
             LoaiPhong loaiPhong = lpdao.selectByID(p.getMaLP());
             LoaiPhongLoaiGia lplg = (LoaiPhongLoaiGia) lplgdao.selectByLpAndLg(loaiPhong.getMa(), lg.getMa());
-            System.out.println("selected" + lplg.getDonGia());
+//            System.out.println("selected" + lplg.getDonGia());
             List<Object> moTa = ptndao.moTaPhong(p.getSoPhong());
             if (moTa.size() == 1) {
                 des = moTa.get(0).toString();
@@ -1524,7 +1522,7 @@ public class DatPhongFrm extends javax.swing.JInternalFrame {
 
         LoaiGia lg = lgdao.selectByID(hd.getMaLg());
         cboPriceType.setSelectedItem(lg);
-        System.out.println("edit:" + cboPriceType.getSelectedItem());
+//        System.out.println("edit:" + cboPriceType.getSelectedItem());
 
         KhachHang kh = khdao.selectByID(hd.getMaKh());
         this.setFormKhachHang(kh);
@@ -1601,96 +1599,36 @@ public class DatPhongFrm extends javax.swing.JInternalFrame {
 //        }
 //    }
     private void exportBillToPDF(Integer maHD) throws IOException {
-        //times
-        int gioThue = -1;
-        int gioTre_QuaDem = -1;
-        int tongNgayThue = -1;
-        int maLG = 0;
-
-        //list 
-        List<Integer> listSoLuong = null;
-        List<String> listTenLG = null;
-        List<String> listTenDV = null;
-        List<String> listSoPhong = null;
-        List<Double> listDGDV = null;
-        List<Double> listDGPhong = null;
-        List<Double> listTienPhong = new ArrayList<>();
-        List<Double> listTongTien = null;
-        List<Double> listTongTienHD = null;
-        List<String> listTenLP = null;
-
-        //DAO use
-        maLG = pdfdao.selectMaLG(maHD);
-        gioThue = pdfdao.selectHour(maHD);
-        gioTre_QuaDem = pdfdao.selecHour2(maHD);
-        tongNgayThue = pdfdao.selecHour3(maHD);
-        listSoPhong = pdfdao.selectPhong(maHD);
-        listTenLG = pdfdao.selectTenLG(maHD);
-        listTenLP = pdfdao.selectTenLP(maHD);
-        listSoLuong = pdfdao.selectSoLuong(maHD);
-        listTenDV = pdfdao.selectTenDV(maHD);
-        listDGPhong = pdfdao.selectDonGiaPhong(maHD);
-        listDGDV = pdfdao.selectDGDV(maHD);
-        listTongTien = pdfdao.selectTongTienDV(maHD);
-        listTongTienHD = pdfdao.selectTongTienHD(maHD);
 
         //Object
         HoaDon hd = hddao.selectByID(maHD);
-        KhachHang khachHang = khdao.selectByID(hd.getMaKh());
+        KhachHang kh = khdao.selectByID(hd.getMaKh());
 
-        //moneyCustomer
-        switch (maLG) {
-            case 1:
-                if (gioThue <= 2) {
-                    for (int i = 0; i < listDGPhong.size(); i++) {
-                        listTienPhong.add(i, listDGPhong.get(i));
-                    }
-                } else {
-                    for (int i = 0; i < listDGPhong.size(); i++) {
-                        listTienPhong.add(i, listDGPhong.get(i) + (gioThue - 2) * 20000);
-                    }
-                }
-                break;
-            case 2:
-                if (gioTre_QuaDem >= 10 && tongNgayThue > 0) {
-                    for (int i = 0; i < listDGPhong.size(); i++) {
-                        listTienPhong.add(i, listDGPhong.get(i) + (gioTre_QuaDem - 10) * 20000);
-                    }
-                } else {
-                    for (int i = 0; i < listDGPhong.size(); i++) {
-                        listTienPhong.add(i, listDGPhong.get(i));
-                    }
-                }
-                break;
-            default:
-                if (tongNgayThue < 2) {
-                    for (int i = 0; i < listDGPhong.size(); i++) {
-                        listTienPhong.add(i, listDGPhong.get(i));
-                    }
-                } else {
-                    for (int i = 0; i < listDGPhong.size(); i++) {
-                        listTienPhong.add(i, tongNgayThue * listDGPhong.get(i));
-                    }
-                }
-                break;
-        }
+        //List
+        List<PDFExport> listRooms = pdfdao.selectRooms(hd.getMa(), hd.getMaLg());
+        List<Double> listRoomCharges = pdfdao.selectTienPhong(hd.getMa(), hd.getMaLg());
+        List<PDFExport> listServices = pdfdao.selectServices(hd.getMa());
+
+        //format date
+        String pattern = "dd-MM-yyyy";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        String date = simpleDateFormat.format(hd.getNgayThanhToan());
 
         //Document create and setting
-        String path = "invoice.pdf";
-        PdfWriter pdfWriter = null;
-        try {
-            pdfWriter = new PdfWriter(path);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(DatPhongFrm.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        String invoiceName = "invoice"
+                + "_" + hd.getMa()
+                + "_" + date
+                + "_" + hd.getMaKh()
+                + ".pdf";
+
+        PdfWriter pdfWriter = new PdfWriter(new FileOutputStream(invoiceName));
         PdfDocument pdfDocument = new PdfDocument(pdfWriter);
         pdfDocument.setDefaultPageSize(PageSize.A4);
         Document document = new Document(pdfDocument);
 
         //Table 1
-        float col = 520f;
-        float columnWidth[] = {col};
-        Table headTbl = new Table(columnWidth);
+        float widthHeadTbl[] = {520f};
+        Table headTbl = new Table(widthHeadTbl);
 
         headTbl.setBackgroundColor(new DeviceRgb(63, 169, 219));
 
@@ -1717,137 +1655,124 @@ public class DatPhongFrm extends javax.swing.JInternalFrame {
         document.add(headTbl);
         document.add(new Paragraph("\n"));
 
-        //TABLE 2
-        float colWidth[] = {260, 260};
-        Table inforTbl = new Table(colWidth);
-        inforTbl.addCell(new Cell(0, 4)
+        //TABLE 2 -- CUSTOMER INFORMATION
+        float colWidthCus[] = {260, 260};
+        Table customerTbl = new Table(colWidthCus);
+        customerTbl.addCell(new Cell(0, 4)
                 .add("Customer Information")
                 .setBold()
                 .setBorder(Border.NO_BORDER)
         );
-        inforTbl.addCell(new Cell().add("Receipt No: " + hd.getMa())
+        customerTbl.addCell(new Cell().add("Receipt No: " + hd.getMa())
                 .setBorder(Border.NO_BORDER)
         );
-        inforTbl.addCell(new Cell().add("Cashier: " + removeAccent(Auth.user.getTen()))
+        customerTbl.addCell(new Cell().add("Cashier: " + FormatData.removeAccent(Auth.user.getTen()))
                 .setBorder(Border.NO_BORDER)
         );
-        inforTbl.addCell(new Cell().add("Date of rent: " + hd.getNgayThue())
+        customerTbl.addCell(new Cell().add("Date of rent: " + hd.getNgayThue())
                 .setBorder(Border.NO_BORDER)
         );
-        inforTbl.addCell(new Cell().add("Date of payment: " + hd.getNgayThanhToan())
-                .setBorder(Border.NO_BORDER)
-        );
-
-        inforTbl.addCell(new Cell().add("Customer: " + removeAccent(khachHang.getTen()))
+        customerTbl.addCell(new Cell().add("Date of payment: " + hd.getNgayThanhToan())
                 .setBorder(Border.NO_BORDER)
         );
 
-        inforTbl.addCell(new Cell().add("Description: ")
+        customerTbl.addCell(new Cell().add("Customer: " + FormatData.removeAccent(kh.getTen()))
                 .setBorder(Border.NO_BORDER)
         );
-        document.add(inforTbl);
+
+        customerTbl.addCell(new Cell().add("Description: ")
+                .setBorder(Border.NO_BORDER)
+        );
+        document.add(customerTbl);
         document.add(new Paragraph("=========================================================================="));
 
-//TABLE 3
+        //TABLE 3 -- ROOM IS RENTED
         float tblWidth[] = {10, 160, 160, 190};
-        Table allRoomTbl = new Table(tblWidth);
+        Table roomTbl = new Table(tblWidth);
         document.add(new Paragraph("Room is rented: \n"));
-        if (!listSoPhong.isEmpty()) {
-            allRoomTbl.addCell(new Cell().add("").setBorder(Border.NO_BORDER));
-            allRoomTbl.addCell(new Cell().add(removeAccent("Type of rental")).setBorder(Border.NO_BORDER));
-            allRoomTbl.addCell(new Cell().add(removeAccent("Type - Number of rooms")).setBorder(Border.NO_BORDER));
-            allRoomTbl.addCell(new Cell().add(removeAccent("Into money"))
+        if (!listRooms.isEmpty()) {
+            roomTbl.addCell(new Cell().add("").setBorder(Border.NO_BORDER));
+            roomTbl.addCell(new Cell().add(FormatData.removeAccent("Type of rental")).setBorder(Border.NO_BORDER));
+            roomTbl.addCell(new Cell().add(FormatData.removeAccent("Type - Number of rooms")).setBorder(Border.NO_BORDER));
+            roomTbl.addCell(new Cell().add(FormatData.removeAccent("Into money"))
                     .setBorder(Border.NO_BORDER)
                     .setTextAlignment(TextAlignment.RIGHT));
-            switch (maLG) {
-                case 1:
-                    for (int i = 0; i < listSoPhong.size(); i++) {
-                        allRoomTbl.addCell(new Cell().add("").setBorder(Border.NO_BORDER));
-                        allRoomTbl.addCell(new Cell().add("- " + (removeAccent(listTenLG.get(i))) + ": " + gioThue + removeAccent(" giờ")).setBorder(Border.NO_BORDER));
-                        allRoomTbl.addCell(new Cell().add(removeAccent(listTenLP.get(i)) + " - " + listSoPhong.get(i)).setBorder(Border.NO_BORDER));
-                        allRoomTbl.addCell(new Cell().add(FormatData.formatMoney(listTienPhong.get(i)) + " VND")
-                                .setBorder(Border.NO_BORDER)
-                                .setTextAlignment(TextAlignment.RIGHT));
-                    }
-                    break;
-                case 2:
-                    for (int i = 0; i < listSoPhong.size(); i++) {
-                        allRoomTbl.addCell(new Cell().add("").setBorder(Border.NO_BORDER));
-                        allRoomTbl.addCell(new Cell().add("- " + (removeAccent(listTenLG.get(i))) + ": " + gioTre_QuaDem + removeAccent(" giờ")).setBorder(Border.NO_BORDER));
-                        allRoomTbl.addCell(new Cell().add(removeAccent(listTenLP.get(i)) + " - " + listSoPhong.get(i)).setBorder(Border.NO_BORDER));
-                        allRoomTbl.addCell(new Cell().add(FormatData.formatMoney(listTienPhong.get(i)) + " VND")
-                                .setBorder(Border.NO_BORDER)
-                                .setTextAlignment(TextAlignment.RIGHT));
-                    }
-                    break;
-                default:
-                    for (int i = 0; i < listSoPhong.size(); i++) {
-                        allRoomTbl.addCell(new Cell().add("").setBorder(Border.NO_BORDER));
-                        allRoomTbl.addCell(new Cell().add("- " + (removeAccent(listTenLG.get(i))) + ": " + tongNgayThue + removeAccent(" ngày")).setBorder(Border.NO_BORDER));
-                        allRoomTbl.addCell(new Cell().add(removeAccent(listTenLP.get(i)) + " - " + listSoPhong.get(i)).setBorder(Border.NO_BORDER));
-                        allRoomTbl.addCell(new Cell().add(FormatData.formatMoney(listTienPhong.get(i)) + " VND")
-                                .setBorder(Border.NO_BORDER)
-                                .setTextAlignment(TextAlignment.RIGHT));
-                    }
-                    break;
+            int maLG = hd.getMaLg();
+            if (maLG == 1 || maLG == 2) {
+                for (int i = 0; i < listRooms.size(); i++) {
+                    roomTbl.addCell(new Cell().add("").setBorder(Border.NO_BORDER));
+                    roomTbl.addCell(new Cell().add("- " + (FormatData.removeAccent(listRooms.get(i).getTenLG())) + ": " + listRooms.get(i).getThoigianThue() + FormatData.removeAccent(" giờ")).setBorder(Border.NO_BORDER));
+                    roomTbl.addCell(new Cell().add(FormatData.removeAccent(listRooms.get(i).getTenLP()) + " - " + listRooms.get(i).getSoPhong()).setBorder(Border.NO_BORDER));
+                    roomTbl.addCell(new Cell().add(FormatData.formatMoney(listRoomCharges.get(i)) + " VND")
+                            .setBorder(Border.NO_BORDER)
+                            .setTextAlignment(TextAlignment.RIGHT));
+                }
+            } else {
+                for (int i = 0; i < listRooms.size(); i++) {
+                    roomTbl.addCell(new Cell().add("").setBorder(Border.NO_BORDER));
+                    roomTbl.addCell(new Cell().add("- " + (FormatData.removeAccent(listRooms.get(i).getTenLG())) + ": " + listRooms.get(i).getThoigianThue() + FormatData.removeAccent(" ngày")).setBorder(Border.NO_BORDER));
+                    roomTbl.addCell(new Cell().add(FormatData.removeAccent(listRooms.get(i).getTenLP()) + " - " + listRooms.get(i).getSoPhong()).setBorder(Border.NO_BORDER));
+                    roomTbl.addCell(new Cell().add(FormatData.formatMoney(listRoomCharges.get(i)) + " VND")
+                            .setBorder(Border.NO_BORDER)
+                            .setTextAlignment(TextAlignment.RIGHT));
+                }
             }
+            document.add(roomTbl);
 
-        }
-        document.add(allRoomTbl);
-
-        Table allServicesTbl = new Table(tblWidth);
-        if (!listTenDV.isEmpty()) {
-            document.add(new Paragraph("Service used: \n"));
-            allServicesTbl.addCell(new Cell().add("").setBorder(Border.NO_BORDER));
-            allServicesTbl.addCell(new Cell().add(removeAccent("Service name")).setBorder(Border.NO_BORDER));
-            allServicesTbl.addCell(new Cell().add(removeAccent("Quantity x unit price")).setBorder(Border.NO_BORDER));
-            allServicesTbl.addCell(new Cell().add(removeAccent(""))
-                    .setBorder(Border.NO_BORDER)
-                    .setTextAlignment(TextAlignment.RIGHT));
-
-            for (int i = 0; i < listTenDV.size(); i++) {
-                allServicesTbl.addCell(new Cell().add("").setBorder(Border.NO_BORDER));
-                allServicesTbl.addCell(new Cell().add("- " + removeAccent(listTenDV.get(i)))
-                        .setBorder(Border.NO_BORDER));
-                allServicesTbl.addCell(new Cell().add(listSoLuong.get(i) + " x " + FormatData.formatMoney(listDGDV.get(i)) + " VND").setBorder(Border.NO_BORDER));
-                allServicesTbl.addCell(new Cell().add(FormatData.formatMoney(listTongTien.get(i)) + " VND")
+            //TABLE 4 -- SERVICE USED
+            Table servicesTbl = new Table(tblWidth);
+            if (!listServices.isEmpty()) {
+                document.add(new Paragraph("Service used: \n"));
+                servicesTbl.addCell(new Cell().add("").setBorder(Border.NO_BORDER));
+                servicesTbl.addCell(new Cell().add(FormatData.removeAccent("Service name")).setBorder(Border.NO_BORDER));
+                servicesTbl.addCell(new Cell().add(FormatData.removeAccent("Quantity x Unit price")).setBorder(Border.NO_BORDER));
+                servicesTbl.addCell(new Cell().add(FormatData.removeAccent(""))
                         .setBorder(Border.NO_BORDER)
                         .setTextAlignment(TextAlignment.RIGHT));
-            }
-        }
-        document.add(allServicesTbl);
 
-        document.add(new Paragraph("_______________################################################_______________"));
-        float tblWidthTM[] = {130, 10, 130, 250};
-        Table totalMoney = new Table(tblWidthTM);
-        if (!listTongTienHD.isEmpty()) {
+                for (int i = 0; i < listServices.size(); i++) {
+                    servicesTbl.addCell(new Cell().add("").setBorder(Border.NO_BORDER));
+                    servicesTbl.addCell(new Cell().add("- " + FormatData.removeAccent(listServices.get(i).getTenDV()))
+                            .setBorder(Border.NO_BORDER));
+                    servicesTbl.addCell(new Cell().add(listServices.get(i).getSoLuong() + " x " + FormatData.formatMoney(listServices.get(i).getDonGia()) + " VND").setBorder(Border.NO_BORDER));
+                    servicesTbl.addCell(new Cell().add(FormatData.formatMoney(listServices.get(i).getTongTien()) + " VND")
+                            .setBorder(Border.NO_BORDER)
+                            .setTextAlignment(TextAlignment.RIGHT));
+                }
+            }
+            document.add(servicesTbl);
+            document.add(new Paragraph("_______________################################################_______________"));
+
+            //TOTALMONEY TABLE
+            float tblWidthTM[] = {130, 10, 130, 250};
+            Table totalMoney = new Table(tblWidthTM);
             totalMoney.addCell(new Cell().add("Total money: ").setBorder(Border.NO_BORDER));
             totalMoney.addCell(new Cell().add("").setBorder(Border.NO_BORDER));
             totalMoney.addCell(new Cell().add("").setBorder(Border.NO_BORDER));
-            totalMoney.addCell(new Cell().add(FormatData.formatMoney(listTongTienHD.get(0)) + " VND")
+            totalMoney.addCell(new Cell().add(FormatData.formatMoney(hd.getTongTien()) + " VND")
                     .setBorder(Border.NO_BORDER)
                     .setBold()
                     .setTextAlignment(TextAlignment.RIGHT));
+
+            document.add(totalMoney);
+            document.close();
+
+            System.out.println("PDF Created!");
+
+            //move file PDF Created to invoices folder
+            File a = new File(invoiceName);
+            a.renameTo(new File("invoices\\" + a.getName()));
+            a.delete();
+
+            //Open after created and moved
+            File file = new File("invoices\\" + a.getName());
+            if (file.toString().endsWith(".pdf")) {
+                Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + file);
+            } else {
+                Desktop desktop = Desktop.getDesktop();
+                desktop.open(file);
+            }
+
         }
-        document.add(totalMoney);
-
-        document.close();
-        System.out.println("PDF Created!");
-
-        ///Open after created
-        File file = new File("invoice.pdf");
-        if (file.toString().endsWith(".pdf")) {
-            Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + file);
-        } else {
-            Desktop desktop = Desktop.getDesktop();
-            desktop.open(file);
-        }
-
-    }
-
-    private String removeAccent(String s) {
-        String temp = Normalizer.normalize(s, Normalizer.Form.NFD);
-        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-        return pattern.matcher(temp).replaceAll("");
     }
 }

@@ -5,7 +5,6 @@
  */
 package com.qlks.util;
 
-import com.qlks.ui.LoaiPhongFrm;
 import java.awt.Component;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;

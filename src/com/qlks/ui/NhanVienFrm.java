@@ -19,8 +19,6 @@ import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JDesktopPane;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
 import javax.swing.table.DefaultTableModel;
 
 /**
